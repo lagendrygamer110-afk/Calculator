@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <style>
+    html {
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .btn {
+      transition: transform 0.1s ease, background-color 0.2s;
+    }
+    .btn:active {
+      transform: scale(0.95);
+    }
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    body.theme-cosmin .background {
+      background-image: url('./assets/images/thumb-1920-568756.jpg');
+    }
+    body.theme-light .background,
+    body.theme-dark .background {
+      background-image: none;
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-gray-900 text-white flex items-center justify-center min-h-screen p-4 transition-colors duration-500">
+  <div class="background"></div>
+
+  <div class="absolute top-4 right-4 space-x-2">
+    <button id="theme-light" class="btn p-2 rounded-full bg-white text-black" title="Light Theme">☀️</button>
+    <button id="theme-dark" class="btn p-2 rounded-full bg-gray-800 text-white" title="Dark Theme">🌙</button>
+    <button id="theme-cosmin" class="btn p-2 rounded-full bg-indigo-900 text-white" title="Cosmin Galaxy">✨</button>
+  </div>
+
+  <div class="relative z-10 bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 max-w-md w-full scale-[1.15] backdrop-blur-md bg-opacity-80 dark:bg-opacity-90">
+    <div id="display" class="text-right text-3xl min-h-[3rem] mb-4 break-words text-gray-800 dark:text-white"></div>
+    <div class="grid grid-cols-4 gap-4">
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="7">7</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="8">8</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="9">9</button>
+      <button class="btn bg-red-400 dark:bg-red-600 text-white rounded-xl p-5" data-action="del">DEL</button>
+
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="4">4</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="5">5</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="6">6</button>
+      <button class="btn bg-blue-300 dark:bg-blue-600 text-white rounded-xl p-5" data-key="/">/</button>
+
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="1">1</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="2">2</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="3">3</button>
+      <button class="btn bg-blue-300 dark:bg-blue-600 text-white rounded-xl p-5" data-key="*">*</button>
+
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key="0">0</button>
+      <button class="btn bg-gray-200 dark:bg-gray-700 rounded-xl p-5" data-key=".">.</button>
+      <button class="btn bg-green-400 dark:bg-green-600 text-white rounded-xl p-5" data-action="equal">=</button>
+      <button class="btn bg-blue-300 dark:bg-blue-600 text-white rounded-xl p-5" data-key="-">-</button>
+
+      <button class="btn bg-blue-300 dark:bg-blue-600 text-white rounded-xl p-5 col-span-4" data-key="+">+</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    let expression = '';
+
+    const updateDisplay = () => {
+      display.textContent = expression || '0';
+    };
+
+    const handleInput = (input) => {
+      expression += input;
+      updateDisplay();
+    };
+
+    const handleEqual = () => {
+      try {
+        expression = eval(expression).toString();
+      } catch {
+        expression = 'Error';
+      }
+      updateDisplay();
+    };
+
+    const handleDelete = () => {
+      expression = '';
+      updateDisplay();
+    };
+
+    const handleBackspace = () => {
+      expression = expression.slice(0, -1);
+      updateDisplay();
+    };
+
+    document.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.key) {
+          handleInput(btn.dataset.key);
+        } else if (btn.dataset.action === 'equal') {
+          handleEqual();
+        } else if (btn.dataset.action === 'del') {
+          handleDelete();
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (/^[0-9.+\-*/]$/.test(e.key)) {
+        handleInput(e.key);
+      } else if (e.key === 'Enter') {
+        handleEqual();
+      } else if (e.key === 'Backspace') {
+        handleBackspace();
+      } else if (e.key === 'Delete') {
+        handleDelete();
+      }
+    });
+
+    const root = document.documentElement;
+    const body = document.body;
+
+    const setTheme = (theme) => {
+      body.classList.remove('theme-light', 'theme-dark', 'theme-cosmin');
+      body.classList.add(`theme-${theme}`);
+      if (theme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+      localStorage.setItem('theme', theme);
+    };
+
+    document.getElementById('theme-light').addEventListener('click', () => setTheme('light'));
+    document.getElementById('theme-dark').addEventListener('click', () => setTheme('dark'));
+    document.getElementById('theme-cosmin').addEventListener('click', () => setTheme('cosmin'));
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+
+    updateDisplay();
+  </script>
+</body>
+</html>
